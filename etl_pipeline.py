@@ -8,7 +8,7 @@ from pyspark.sql.functions import monotonically_increasing_id
 from pyspark.sql.functions import col
 import os
 import psycopg2
-pip install python-dotenv
+
 
 
 # Initialize Spark session
@@ -22,8 +22,8 @@ spark = SparkSession.builder \
 df = spark.read.csv(r"dataset\rawdata\G_pay_bank_transactions.csv", header=True, inferSchema=True)
 
 # Data cleaning and transformation
-for col in df.columns:
-    print(f"Column: {col}, Nulls: {df.filter(df[col].isNull()).count()}")
+for column in df.columns:
+    print(f"Column: {column}, Nulls: {df.filter(df[column].isNull()).count()}")
 
 
 # Fill up the missing values
@@ -54,8 +54,8 @@ df_cleaned = df.fillna({
 df_cleaned = df_cleaned.dropna(subset=["Last_Updated"])
 
 # Data cleaning and transformation
-for col in df_cleaned.columns:
-    print(f"Column: {col}, 'Nulls: ', {df_cleaned.filter(df_cleaned[col].isNull()).count()}")
+for column in df_cleaned.columns:
+    print(f"Column: {column}, 'Nulls: ', {df_cleaned.filter(df_cleaned[column].isNull()).count()}")
  
  
 # Data transformation
@@ -88,13 +88,13 @@ fact_table = df_cleaned.join(transactions, ["Transaction_Date","Amount","Transac
      'IBAN','Currency_Code','Random_Number','Category','Group','Is_Active','Last_Updated','Description')
                          
                          
- fact_table = fact_table.withColumn(
+fact_table = fact_table.withColumn(
     'Is_Active', 
     (col('Is_Active') == 'True').cast('boolean')
-)    
- 
- from dotenv import load_dotenv
-import os
+) 
+    
+from dotenv import load_dotenv
+
 load_dotenv()
 
 # Get the password
@@ -170,7 +170,7 @@ def create_table():
     cursor.close()
 
 
- url = "jdbc:postgresql://localhost:5432/g_pay_bank"
+url = "jdbc:postgresql://localhost:5432/g_pay_bank"
 properties = {
     "user": "postgres",
     "password": db_password,
@@ -180,10 +180,10 @@ properties = {
 # Load data into the database
 transactions.write.jdbc(url=url, table="transactions", mode="append", properties=properties)
 
-
-
-                          customers.write.jdbc(url=url, table="customers", mode="append", properties=properties)
+customers.write.jdbc(url=url, table="customers", mode="append", properties=properties)
                           
-                          employees.write.jdbc(url=url, table="employees", mode="append", properties=properties)
+employees.write.jdbc(url=url, table="employees", mode="append", properties=properties)
                           
-                          fact_table.write.jdbc(url=url, table="fact_table", mode="append", properties=properties)
+fact_table.write.jdbc(url=url, table="fact_table", mode="append", properties=properties)
+
+print("Data loaded successfully into the database.")
